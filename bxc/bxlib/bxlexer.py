@@ -20,6 +20,7 @@ class Lexer:
             'false'   ,
             'if'      ,
             'int'     ,
+            'print'   ,
             'return'  ,
             'true'    ,
             'var'     ,

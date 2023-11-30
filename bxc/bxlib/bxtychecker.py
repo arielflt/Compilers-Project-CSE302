@@ -161,13 +161,10 @@ class TypeChecker:
                 atypes, retty = [], None
 
                 if name.value not in self.procs:
-                    if name.value == 'print':
-                        atypes, retty = [Type.INT], Type.VOID
-                    else:
-                        self.report(
-                            f'unknown procedure: {name.value}',
-                            position = name.position,
-                        )
+                    self.report(
+                        f'unknown procedure: {name.value}',
+                        position = name.position,
+                    )
                 else:
                     atypes, retty = self.procs[name.value]
 
@@ -181,6 +178,18 @@ class TypeChecker:
                     self.for_expression(a, atypes[i] if i in range(len(atypes)) else None)
 
                 type_ = retty
+
+            case PrintExpression(e):
+                self.for_expression(e);
+
+                if e.type_ is not None:
+                    if e.type_ not in (Type.INT, Type.BOOL):
+                        self.report(
+                            f'can only print integers and booleans, not {e.type_}',
+                            position = e.position,
+                        )
+
+                type_ = Type.VOID
 
             case _:
                 print(expr)

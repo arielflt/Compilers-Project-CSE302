@@ -75,6 +75,11 @@ class CallExpression(Expression):
     arguments: list[Expression]
 
 # --------------------------------------------------------------------
+@dc.dataclass
+class PrintExpression(Expression):
+    argument: Expression
+
+# --------------------------------------------------------------------
 class Statement(AST):
     pass
 

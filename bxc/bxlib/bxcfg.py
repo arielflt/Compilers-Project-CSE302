@@ -6,7 +6,7 @@ from .bxmm  import MM
 class CFGNode:
     def __init__(self):
         self.label  = None      # Basic block label
-        self.body   = []        # Basic block body (including (c)jumps & ret, exclusing the label)
+        self.body   = []        # Basic block body (excluding labels, (c)jumps & ret)
         self.cjumps = []        # conditional jumps
         self.jump   = None      # Final jump (if the block terminates with "ret", it is set to False)
 
@@ -31,31 +31,34 @@ def tac2cfg(tac : list[str | TAC]):
 
         if len(blocks) > 1:
             if blocks[-2].jump is None:
-                blocks[-2].jump = blocks[-1].label
-                blocks[-2].body.append(TAC('jmp', [blocks[-1].label]))
+                blocks[-2].jump = ('jmp', blocks[-1].label)
 
         while i < len(tac):
             if isinstance(tac[i], str):
                 break
 
             itac = tac[i]; i += 1
-            blocks[-1].body.append(itac)
 
             if itac.opcode == 'ret':
-                blocks[-1].jump = False
+                blocks[-1].jump = ('ret', itac.arguments)
                 break
 
             if itac.opcode == 'jmp':
-                blocks[-1].jump = itac.arguments[0]
+                blocks[-1].jump = ('jmp', itac.arguments[0])
                 break
 
             if itac.opcode in ('jz', 'jnz', 'jgt', 'jge', 'jlt', 'jle'):
                 blocks[-1].cjumps.append((itac.opcode, itac.arguments))
+                break
 
-    if blocks:
-        if blocks[-1].jump is None:
-            blocks[-1].jump = False
-            blocks[-1].body.append(TAC('ret', []))
+            blocks[-1].body.append(itac)
+
+    if not blocks:
+        blocks.append(CFGNode())
+        blocks.label = MM.fresh_label()
+
+    if blocks[-1].jump is None:
+        blocks[-1].jump = ('ret', [])
 
     return CFG(blocks[0].label, { b.label: b for b in blocks })
 
@@ -73,10 +76,23 @@ def cfg2tac(cfg: CFG):
         tac.append(f'{node.label}:')
         tac.extend(node.body)
 
-        if isinstance(node.jump, str):
-            if node.jump not in visited:
+        for cjump, args in node.cjumps:
+            tac.append(TAC(cjump, args))
+
+        match node.jump[0]:
+            case 'ret':
+                tac.append(TAC('ret', node.jump[1]))
+
+            case 'jmp':
+                tac.append(TAC('jmp', [node.jump[1]]))
+
+            case _:
+                assert(False)
+
+        if node.jump[0] == 'jmp':
+            if node.jump[1] not in visited:
                 tac.pop()
-                block2tac(node.jump)
+                block2tac(node.jump[1])
 
         for cjump in node.cjumps:
             block2tac(cjump[1][1])
@@ -110,8 +126,8 @@ def jthreading(cfg: CFG) -> CFG:
         visit(name)
 
     for block in cfg.cfg.values():
-        if isinstance(block.jump, str):
-            block.jump = dests[block.jump]
+        if block.jump[0] == 'jmp':
+            block.jump = ('jmp', dests[block.jump[1]])
         block.cjumps = [
             (cjump[0], (cjump[1][0], dests[cjump[1][1]]))
             for cjump in block.cjumps
@@ -128,8 +144,8 @@ def uce(cfg: CFG) -> CFG:
             return
         visited.add(name)
         node = cfg.cfg[name]
-        if isinstance(node.jump, str):
-            visit(node.jump)
+        if node.jump[0] == 'jmp':
+            visit(node.jump[1])
         for cjump in node.cjumps:
             visit(cjump[1][1])
 

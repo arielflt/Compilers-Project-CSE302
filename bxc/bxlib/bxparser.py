@@ -67,7 +67,7 @@ class Parser:
                 lexer    = self.lexer.lexer,
                 tracking = True,
             )
-    
+
             return ast if checkpoint else None
 
     def _position(self, p) -> Range:
@@ -163,6 +163,13 @@ class Parser:
             proc      = p[1],
             arguments = p[3],
             position  = self._position(p),
+        )
+
+    def p_expression_print(self, p):
+        """expr : PRINT LPAREN expr RPAREN"""
+        p[0] = PrintExpression(
+            argument = p[3],
+            position = self._position(p),
         )
 
     def p_exprs_comma_1(self, p):
