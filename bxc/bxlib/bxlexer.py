@@ -42,7 +42,6 @@ class Lexer:
         'COMMA'    ,
         'LBRACKET' , 
         'RBRACKET' , 
-        'ASTERISK' ,
         'AMP'      ,
         'AMPAMP'   ,
         'BANG'     ,
@@ -75,7 +74,6 @@ class Lexer:
     t_COMMA     = re.escape(',')
     t_LBRACKET  = r'\['
     t_RBRACKET  = r'\]'
-    t_ASTERISK  = r'\*'
 
     t_AMP       = re.escape('&')
     t_AMPAMP    = re.escape('&&')
