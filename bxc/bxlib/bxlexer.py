@@ -40,6 +40,8 @@ class Lexer:
         'COLON'    ,
         'SEMICOLON',
         'COMMA'    ,
+        'PERIOD'   ,
+        'ARR'      ,
         'LBRACKET' , 
         'RBRACKET' , 
         'AMP'      ,
@@ -72,9 +74,10 @@ class Lexer:
     t_COLON     = re.escape(':')
     t_SEMICOLON = re.escape(';')
     t_COMMA     = re.escape(',')
+    t_PERIOD    = re.escape('.')
+    t_ARR       = re.escape('->')
     t_LBRACKET  = r'\['
     t_RBRACKET  = r'\]'
-
     t_AMP       = re.escape('&')
     t_AMPAMP    = re.escape('&&')
     t_BANG      = re.escape('!')
