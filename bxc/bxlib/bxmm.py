@@ -14,8 +14,8 @@ class MM:
     _counter = -1
 
     PRINTS = {
-        Type.INT  : 'print_int',
-        Type.BOOL : 'print_bool',
+        BasicBXType.INT  : 'print_int',
+        BasicBXType.BOOL : 'print_bool',
     }
 
     def __init__(self):
@@ -161,7 +161,7 @@ class MM:
     def for_expression(self, expr: Expression, force = False) -> str:
         target = None
 
-        if not force and expr.type_ == Type.BOOL:
+        if not force and expr.type_ == BasicBXType.BOOL:
             target = self.fresh_temporary()
             tlabel = self.fresh_label()
             flabel = self.fresh_label()
@@ -190,7 +190,7 @@ class MM:
                     for i, argument in enumerate(arguments):
                         temp = self.for_expression(argument)
                         self.push('param', i+1, temp)
-                    if expr.type_ != Type.VOID:
+                    if expr.type_ != BasicBXType.VOID:
                         target = self.fresh_temporary()
                     self.push('call', proc.value, len(arguments), result = target)
 
@@ -215,7 +215,7 @@ class MM:
     }
 
     def for_bexpression(self, expr: Expression, tlabel: str, flabel: str):
-        assert(expr.type_ == Type.BOOL)
+        assert(expr.type_ == BasicBXType.BOOL)
 
         match expr:
             case VarExpression(name):

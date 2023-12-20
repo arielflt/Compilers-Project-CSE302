@@ -7,7 +7,7 @@ from .bxast    import *
 from .bxscope  import Scope
 
 # ====================================================================
-SigType    = tuple[tuple[Type], Opt[Type]]
+SigType    = tuple[tuple[BasicBXType], Opt[BasicBXType]]
 ProcSigMap = dict[str, SigType]
 
 # --------------------------------------------------------------------
@@ -31,7 +31,7 @@ class PreTyper:
 
                     procs[name.value] = (
                         tuple(x[1] for x in arguments),
-                        Type.VOID if rettype is None else rettype
+                        BasicBXType.VOID if rettype is None else rettype
                     )
 
                 case GlobVarDecl(name, init, type_):
@@ -49,7 +49,7 @@ class PreTyper:
 
         if 'main' not in procs:
             self.reporter('this program is missing a main subroutine')
-        elif procs['main'] != ((), Type.VOID):
+        elif procs['main'] != ((), BasicBXType.VOID):
             self.reporter(
                 '"main" should not take any argument and should not return any value'
             )
@@ -58,8 +58,8 @@ class PreTyper:
 
 # --------------------------------------------------------------------
 class TypeChecker:
-    B : Type = Type.BOOL
-    I : Type = Type.INT
+    B : BasicBXType = BasicBXType.BOOL
+    I : BasicBXType = BasicBXType.INT
 
     SIGS = {
         'opposite'                 : ([I   ], I),
@@ -145,11 +145,11 @@ class TypeChecker:
                     type_ = self.scope[name.value]
 
             case BoolExpression(_):
-                type_ = Type.BOOL
+                type_ = BasicBXType.BOOL
 
             case IntExpression(value):
                 self.check_integer_constant_range(value)
-                type_ = Type.INT
+                type_ = BasicBXType.INT
 
             case OpAppExpression(opname, arguments):
                 opsig = self.SIGS[opname]
@@ -183,13 +183,13 @@ class TypeChecker:
                 self.for_expression(e);
 
                 if e.type_ is not None:
-                    if e.type_ not in (Type.INT, Type.BOOL):
+                    if e.type_ not in (BasicBXType.INT, BasicBXType.BOOL):
                         self.report(
                             f'can only print integers and booleans, not {e.type_}',
                             position = e.position,
                         )
 
-                type_ = Type.VOID
+                type_ = BasicBXType.VOID
 
             case _:
                 print(expr)
@@ -223,13 +223,13 @@ class TypeChecker:
                 self.for_block(block)
 
             case IfStatement(condition, iftrue, iffalse):
-                self.for_expression(condition, etype = Type.BOOL)
+                self.for_expression(condition, etype = BasicBXType.BOOL)
                 self.for_statement(iftrue)
                 if iffalse is not None:
                     self.for_statement(iffalse)
 
             case WhileStatement(condition, body):
-                self.for_expression(condition, etype = Type.BOOL)
+                self.for_expression(condition, etype = BasicBXType.BOOL)
                 with self.in_loop():
                     self.for_statement(body)
 
@@ -241,7 +241,7 @@ class TypeChecker:
                     )
 
             case PrintStatement(init):
-                self.for_expression(init, etype = Type.INT)
+                self.for_expression(init, etype = BasicBXType.INT)
 
             case ReturnStatement(e):
                 if e is None:

@@ -23,7 +23,7 @@ from bxlib.bxcfg        import tac2cfg, cfg2tac, uce, jthreading
 
 def parse_args():
     parser = argparse.ArgumentParser(prog = os.path.basename(sys.argv[0]))
-    parser.add_argument("--tac", "-t", action = "store_true")
+
     parser.add_argument('input', help = 'input file (.bx)')
 
     aout = parser.parse_args()
@@ -64,17 +64,6 @@ def _main():
                 # We here do TAC -> CFG -> JTHREADING -> UCE -> TAC
                 # Other CFG-based optimizations should be inserted here
                 decl.tac = cfg2tac(uce(jthreading(tac2cfg(ptac))))
-
-    if args.tac:
-        tac_filename = f"{basename}.tac"
-        try:
-            with open(tac_filename, "w") as file:
-                tac_content = "\n\n".join(repr(tac_cmd) for tac_cmd in tac)
-                file.write(tac_content)
-        except IOError as error:
-            print(f'Cannot write TAC file {tac_filename}: {error}')
-            exit(1)
-
 
     abk = AsmGen.get_backend('x64-linux')
     asm = abk.lower(tac)

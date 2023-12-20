@@ -86,11 +86,11 @@ class Parser:
 
     def p_type_bool(self, p):
         """type : BOOL"""
-        p[0] = Type.BOOL
+        p[0] = BasicBXType.BOOL
 
     def p_type_int(self, p):
         """type : INT"""
-        p[0] = Type.INT
+        p[0] = BasicBXType.INT
 
     def p_expression_var(self, p):
         """expr : name"""
