@@ -191,6 +191,27 @@ class TypeChecker:
 
                 type_ = BasicBXType.VOID
 
+            case AllocExpression(element_type, size_expr):
+                self.for_expression(size_expr, etype=Type.INT)
+                type_ = Type.POINTER_INT if element_type == Type.INT else Type.POINTER_BOOL
+
+            case DereferenceExpression(pointer_expr):
+                self.for_expression(pointer_expr)
+                if pointer_expr.type_ not in [Type.POINTER_INT, Type.POINTER_BOOL]:
+                    self.report("Dereference of non-pointer type", position=pointer_expr.position)
+                else:
+                    type_ = Type.INT if pointer_expr.type_ == Type.POINTER_INT else Type.BOOL
+
+                    
+            case IndexExpression(array_expr, index_expr):
+                self.for_expression(array_expr)
+                self.for_expression(index_expr, etype=Type.INT)
+                if array_expr.type_ not in [Type.POINTER_INT, Type.POINTER_BOOL, Type.ARRAY_INT, Type.ARRAY_BOOL]:
+                    self.report("Indexing on non-array and non-pointer type", position=array_expr.position)
+                else:
+                    # The type is int or bool based on the array/pointer type
+                    type_ = Type.INT if array_expr.type_ in [Type.POINTER_INT, Type.ARRAY_INT] else Type.BOOL
+
             case _:
                 print(expr)
                 assert(False)

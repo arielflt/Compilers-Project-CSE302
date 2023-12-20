@@ -92,6 +92,23 @@ class Parser:
         """type : INT"""
         p[0] = BasicBXType.INT
 
+    def p_type_pointer_int(self, p):
+        '''type : INT STAR'''
+        p[0] = Type.POINTER_INT
+
+    def p_type_pointer_bool(self, p):
+        '''type : BOOL STAR'''
+        p[0] = Type.POINTER_BOOL
+
+    def p_type_array_int(self, p):
+        '''type : INT LBRACKET RBRACKET'''
+        p[0] = Type.ARRAY_INT
+    
+    def p_type_array_bool(self, p):
+        '''type : BOOL LBRACKET RBRACKET'''
+        p[0] = Type.ARRAY_BOOL
+
+
     def p_expression_var(self, p):
         """expr : name"""
         p[0] = VarExpression(
@@ -113,6 +130,18 @@ class Parser:
             value    = p[1],
             position = self._position(p),
         )
+
+    def p_expression_alloc(self, p):
+        '''expr : ALLOC type LBRACKET expr RBRACKET'''
+        p[0] = AllocExpression(p[2], p[4])
+
+    def p_expression_dereference(self, p):
+        """expr : STAR expr"""
+        p[0] = DereferenceExpression(pointer_expr=p[2])
+        
+    def p_expression_index(self, p):
+        """expr : expr LBRACKET expr RBRACKET"""
+        p[0] = IndexExpression(array_expr=p[1], index_expr=p[3])
 
     def p_expression_uniop(self, p):
         """expr : DASH expr %prec UMINUS

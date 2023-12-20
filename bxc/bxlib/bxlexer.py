@@ -25,6 +25,7 @@ class Lexer:
             'true'    ,
             'var'     ,
             'while'   ,
+            'alloc'
         )
     }
     

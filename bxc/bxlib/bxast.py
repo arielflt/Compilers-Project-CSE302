@@ -34,7 +34,11 @@ class BasicBXType(Type, enum.Enum):
     VOID = 0
     BOOL = 1
     INT = 2
-    NULL = 3  # Used when null pointer can't be typecast
+    NULL = 3
+    POINTER_INT = 4
+    POINTER_BOOL = 5
+    ARRAY_INT = 6
+    ARRAY_BOOL = 7
 
     def __str__(self):
         match self:
@@ -46,6 +50,14 @@ class BasicBXType(Type, enum.Enum):
                 return 'bool'
             case self.NULL:
                 return 'null_ptr'
+            case self.POINTER_INT:
+                return 'pointer_int'
+            case self.POINTER_BOOL:
+                return 'pointer_bool'
+            case self.ARRAY_INT:
+                return 'array_int'
+            case self.ARRAY_BOOL:
+                return 'array_bool'
 
 @dc.dataclass
 class PointerType(Type):
@@ -93,6 +105,21 @@ class BoolExpression(Expression):
 @dc.dataclass
 class IntExpression(Expression):
     value: int
+
+@dc.dataclass
+class AllocExpression(Expression):
+    element_type: Type
+    size_expr: Expression
+
+@dc.dataclass
+class DereferenceExpression(Expression):
+    pointer_expr: Expression
+
+@dc.dataclass
+class IndexExpression(Expression):
+    array_expr: Expression
+    index_expr: Expression
+
 
 # --------------------------------------------------------------------
 @dc.dataclass
