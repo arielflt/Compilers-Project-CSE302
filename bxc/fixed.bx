@@ -1,0 +1,6 @@
+def main() {
+    var fixedArr = 0 : int[3];
+    fixedArr[0] = 11;
+    fixedArr[1] = 22;
+    fixedArr[2] = 33;
+    print fixedArr[1]; // Should print

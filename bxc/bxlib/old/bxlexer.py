@@ -25,8 +25,7 @@ class Lexer:
             'true'    ,
             'var'     ,
             'while'   ,
-            'alloc'   ,
-            'null'    ,
+            'alloc'
         )
     }
     
@@ -39,12 +38,13 @@ class Lexer:
         'RPAREN'   ,
         'LBRACE'   ,
         'RBRACE'   ,
-        'LBRACKET' ,
-        'RBRACKET' ,
         'COLON'    ,
         'SEMICOLON',
         'COMMA'    ,
-
+        'PERIOD'   ,
+        'ARR'      ,
+        'LBRACKET' , 
+        'RBRACKET' , 
         'AMP'      ,
         'AMPAMP'   ,
         'BANG'     ,
@@ -72,12 +72,13 @@ class Lexer:
     t_RPAREN    = re.escape(')')
     t_LBRACE    = re.escape('{')
     t_RBRACE    = re.escape('}')
-    t_LBRACKET    = re.escape('[')
-    t_RBRACKET    = re.escape(']')
     t_COLON     = re.escape(':')
     t_SEMICOLON = re.escape(';')
     t_COMMA     = re.escape(',')
-
+    t_PERIOD    = re.escape('.')
+    t_ARR       = re.escape('->')
+    t_LBRACKET  = r'\['
+    t_RBRACKET  = r'\]'
     t_AMP       = re.escape('&')
     t_AMPAMP    = re.escape('&&')
     t_BANG      = re.escape('!')

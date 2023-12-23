@@ -1,0 +1,5 @@
+def main() {
+    var ptr = alloc int[1] : int*;
+    ptr[0] = 42;
+    print *ptr; // Should print 42
+}

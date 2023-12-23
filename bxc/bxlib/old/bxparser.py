@@ -86,24 +86,28 @@ class Parser:
 
     def p_type_bool(self, p):
         """type : BOOL"""
-        p[0] = Type.BOOL
+        p[0] = BasicBXType.BOOL
 
     def p_type_int(self, p):
         """type : INT"""
-        p[0] = Type.INT
+        p[0] = BasicBXType.INT
 
-    def p_type_pointer(self, p):
-        '''type : type STAR'''
-        p[0] = PointerType(
-        target = p[1]
-        )
+    def p_type_pointer_int(self, p):
+        '''type : INT STAR'''
+        p[0] = Type.POINTER_INT
 
-    def p_type_array(self, p):
-        '''type : type LBRACKET NUMBER RBRACKET'''
-        p[0] = ArrayType(
-        target = p[1],
-        size = p[3]
-        )
+    def p_type_pointer_bool(self, p):
+        '''type : BOOL STAR'''
+        p[0] = Type.POINTER_BOOL
+
+    def p_type_array_int(self, p):
+        '''type : INT LBRACKET RBRACKET'''
+        p[0] = Type.ARRAY_INT
+    
+    def p_type_array_bool(self, p):
+        '''type : BOOL LBRACKET RBRACKET'''
+        p[0] = Type.ARRAY_BOOL
+
 
     def p_expression_var(self, p):
         """expr : name"""
@@ -128,47 +132,16 @@ class Parser:
         )
 
     def p_expression_alloc(self, p):
-        '''expr : ALLOC type optional_size'''
-        # Check if it's a variable-length array allocation
-        if p[3] is not None:
-            # p[3] size expression for variable-length
-            p[0] = AllocExpression(
-                allocated = p[2],
-                size = p[3],
-                position = self._position(p)
-            )
-        else:
-            # p[3] is None implys a fixed-size array
-            assert(isinstance(p[2], ArrayType))
-            p[0] = AllocExpression(
-                allocated = p[2].target,
-                size = IntExpression(p[2].size),
-                position = self._position(p)
-            )
+        '''expr : ALLOC type LBRACKET expr RBRACKET'''
+        p[0] = AllocExpression(p[2], p[4])
 
-    def p_optional_size(self, p):
-        '''optional_size : 
-                         | LBRACKET expr RBRACKET'''
-        if len(p) == 1:
-            p[0] = None  # No size specified, indicating a fixed-size array
-        else:
-            p[0] = p[2]  # The size expression for a variable-length array
-
-    def p_expression_reference(self, p):
-        '''expr : AMP assignable
-                | AMP LPAREN assignable RPAREN'''
-        inside = p[2] if len(p) == 3 else p[3]
-        p[0] = ReferenceExpression(
-            argument = inside,
-            position = self._position(p)
-        )
-
-    def p_expression_null(self, p):
-        '''expr : NULL'''
-        p[0] = NullExpression(
-            position = self._position(p)
-        )
-
+    def p_expression_dereference(self, p):
+        """expr : STAR expr"""
+        p[0] = DereferenceExpression(pointer_expr=p[2])
+        
+    def p_expression_index(self, p):
+        """expr : expr LBRACKET expr RBRACKET"""
+        p[0] = IndexExpression(array_expr=p[1], index_expr=p[3])
 
     def p_expression_uniop(self, p):
         """expr : DASH expr %prec UMINUS
@@ -228,30 +201,6 @@ class Parser:
             position = self._position(p),
         )
 
-    def p_assignable_var(self, p):
-        '''assignable : name'''
-        p[0] = VarAssignable(
-                name = p[1],
-                position = self._position(p),
-                )
-
-    def p_assignable_point(self, p):
-        '''assignable : STAR assignable'''
-        p[0] = DereferenceAssignable(
-                argument = p[2],
-                position = self._position(p),
-                )
-    
-    def p_assignable_array(self, p):
-        '''assignable : assignable LBRACKET expr RBRACKET'''
-        p[0] = ArrayAssignable(
-                argument = p[1],
-                index = p[3],
-                position = self._position(p),
-                )
-
-
-
     def p_exprs_comma_1(self, p):
         """exprs_comma_1 : expr
                         | exprs_comma_1 COMMA expr"""
@@ -278,8 +227,8 @@ class Parser:
     def p_stmt_assign(self, p):
         """stmt : name EQ expr SEMICOLON"""
         p[0] = AssignStatement(
-            name      = p[1],
-            expression      = p[3],
+            lhs      = p[1],
+            rhs      = p[3],
             position = self._position(p),
         )
 
